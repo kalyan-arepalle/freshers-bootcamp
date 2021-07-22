@@ -30,7 +30,7 @@ func main(){
 	var m = &sync.Mutex{}
 	var w = &sync.WaitGroup{}
 	balance := 500
-	//go withdraw(&balance,1000,m)
+
 	for i:=0; i< 5; i++ {
 		w.Add(1)
 		go deposit(&balance,100,m,w)
