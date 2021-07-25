@@ -9,7 +9,7 @@ import (
 
 var sum = 0
 
-func student(wg *sync.WaitGroup) {
+func studentRating(wg *sync.WaitGroup) {
 	defer wg.Done()
 	time.Sleep(time.Duration(rand.Intn(10)) * time.Millisecond)
 	sum += rand.Intn(5)
@@ -20,11 +20,10 @@ func main() {
 
 	for i := 1; i <= 200; i++ {
 		wg.Add(1)
-		go student( &wg)
+		go studentRating( &wg)
 	}
 	wg.Wait()
 
-	fmt.Println(sum)
 	avg := float64(sum)/200
-	fmt.Println(avg)
+	fmt.Println("The average rating for the teacher is : ",avg)
 }

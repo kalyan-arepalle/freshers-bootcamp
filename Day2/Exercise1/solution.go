@@ -19,7 +19,7 @@ func main() {
 
 	stringChannel := make(chan string, len(input))
 	done := make(chan string, len(input))
-	for i:=0;i<len(input);i++{
+	for i := 0 ; i < len(input) ; i++{
 		go findFrequency(stringChannel, frequencyMap, done)
 	}
 	for i := 0; i < len(input); i++ {
@@ -30,7 +30,7 @@ func main() {
 	}
 
 	stringJson,err := json.Marshal(frequencyMap)
-	if err!=nil{
+	if err != nil{
 		fmt.Println(err)
 	}
 	fmt.Println(string(stringJson))
