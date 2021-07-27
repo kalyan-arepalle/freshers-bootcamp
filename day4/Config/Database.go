@@ -1,10 +1,14 @@
 //Config/Database.go
 package Config
+
 import (
 	"fmt"
+
 	"gorm.io/gorm"
 )
+
 var DB *gorm.DB
+
 // DBConfig represents db configuration
 type DBConfig struct {
 	Host     string
@@ -13,13 +17,14 @@ type DBConfig struct {
 	DBName   string
 	Password string
 }
+
 func BuildDBConfig() *DBConfig {
 	dbConfig := DBConfig{
 		Host:     "localhost",
 		Port:     3306,
 		User:     "root",
 		Password: "1234",
-		DBName:   "test1",
+		DBName:   "retailer",
 	}
 	return &dbConfig
 }

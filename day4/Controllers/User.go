@@ -2,17 +2,21 @@
 package Controllers
 
 import (
-	"day4/Config"
-	"day4/Models"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/gin-gonic/gin"
+
+	"day4/Config"
+	"day4/Models"
 )
+
+//Global Mutex
 var mutex sync.Mutex
-var channel chan int
+
 //GetProducts ... Get all products
 func GetProducts(c *gin.Context) {
 	var prod []Models.Product
@@ -56,7 +60,7 @@ func GetProductByID(c *gin.Context) {
 		c.JSON(http.StatusOK,prod)
 	}
 }
-//UpdateProduct ... Update the user information
+//UpdateProduct ... Update the product information
 func UpdateProduct(c *gin.Context) {
 	var user Models.Product
 	id := c.Params.ByName("id")
@@ -76,7 +80,7 @@ func UpdateProduct(c *gin.Context) {
 	}
 }
 
-//DeleteProduct ... Delete the user
+//DeleteProduct ... Delete the product
 func DeleteProduct(c *gin.Context) {
 	var prod Models.Product
 	id := c.Params.ByName("id")
@@ -88,6 +92,7 @@ func DeleteProduct(c *gin.Context) {
 	}
 }
 
+//To check if the cool down period is over
 func isCoolDownOver(customerId int) bool{
 	var order Models.Order
 	Config.DB.Model(&order).Where("customer_id = ?",customerId).Last(&order)
@@ -104,9 +109,10 @@ func isCoolDownOver(customerId int) bool{
 	return true
 }
 
+//To check if there is sufficient quantity available
 func isOrderPossible(ord Models.Order, c *gin.Context) bool{
 	id := ord.ProductId
-	mutex.Lock()
+
 	var prod Models.Product
 	err := Models.GetProductByID(&prod,strconv.Itoa(id))
 	if err !=nil{
@@ -114,20 +120,22 @@ func isOrderPossible(ord Models.Order, c *gin.Context) bool{
 	}
 	if prod.Quantity < ord.Quantity{
 		ord.Status = "Failed"
-		mutex.Unlock()
 		return false
 	}
+
+	mutex.Lock()
 	prod.Quantity -= ord.Quantity
 	ord.Status = "Processed"
-	mutex.Unlock()
 	err = Models.UpdateProduct(&prod,strconv.Itoa(id))
+	mutex.Unlock()
+
 	if err !=nil{
 		c.AbortWithStatus(http.StatusNotFound)
 	}
 	return true
 }
 
-var t *gin.Context
+
 //OrderProduct ... Order product for the user
 func OrderProduct(c *gin.Context){
 	var order Models.Order
@@ -145,7 +153,7 @@ func OrderProduct(c *gin.Context){
 	possible := isOrderPossible(order,c)
 	if possible == false{
 		c.JSON(http.StatusOK,gin.H{
-			"status":"order failed",
+			"message":"Insufficient quantity, Order failed",
 		})
 		return
 	}
@@ -172,9 +180,15 @@ func GetOrderByID(c *gin.Context) {
 	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 	} else {
-		c.JSON(http.StatusOK, order)
+		c.JSON(http.StatusOK, gin.H{
+			"id":order.Id,
+			"product_id":order.ProductId,
+			"quantity":order.Quantity,
+			"status":order.Status,
+		})
 	}
 }
+
 //GetOrders ... Get all orders
 func GetOrders(c *gin.Context) {
 	var order []Models.Order

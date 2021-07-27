@@ -2,6 +2,7 @@ package Models
 
 import "gorm.io/gorm"
 
+//Product details
 type Product struct {
 	Id           int   `json:"id"`
 	ProductName string `json:"product_name"`
@@ -12,13 +13,12 @@ func (b *Product) TableName() string {
 	return "products"
 }
 
+//Order Details
 type Order struct {
 	gorm.Model
 	Id			int	 `json:"id"`
 	CustomerId	int	 `json:"customer_id"`
-	//Customer	Customer `gorm:"foreign_key:CustomerId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	ProductId	int	 `json:"product_id"`
-	//Product	 	Product	 `gorm:"foreign_key:ProductId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Quantity	uint	 `json:"quantity"`
 	Status		string	 `json:"status"`
 }
@@ -27,6 +27,7 @@ func (b *Order) TableName() string {
 return "orders"
 }
 
+//Customer Details
 type Customer struct{
 	CustomerId 	int 	 `json:"customer_id"`
 	Name string  `json:"customer_name"`

@@ -1,32 +1,34 @@
 //Routes/Routes.go
 package Routes
 import (
-	"day4/Controllers"
 	"github.com/gin-gonic/gin"
+
+	"day4/Controllers"
 )
+
 //SetupRouter ... Configure routes
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
-	grp1 := r.Group("/product")
+	product := r.Group("/product")
 	{
-		grp1.GET("products", Controllers.GetProducts)
-		grp1.POST("product", Controllers.CreateProduct)
-		grp1.GET("product/:id", Controllers.GetProductByID)
-		grp1.PATCH("product/:id", Controllers.UpdateProduct)
-		grp1.DELETE("product/:id", Controllers.DeleteProduct)
+		product.GET("", Controllers.GetProducts)
+		product.POST("", Controllers.CreateProduct)
+		product.GET(":id", Controllers.GetProductByID)
+		product.PATCH(":id", Controllers.UpdateProduct)
+		product.DELETE(":id", Controllers.DeleteProduct)
 	}
 
-	grp2 :=r.Group("/order")
+	order :=r.Group("/order")
 	{
-		grp2.POST("",Controllers.OrderProduct)
-		grp2.GET(":id",Controllers.GetOrderByID)
-		grp2.GET("",Controllers.GetOrders)
+		order.POST("",Controllers.OrderProduct)
+		order.GET(":id",Controllers.GetOrderByID)
+		order.GET("",Controllers.GetOrders)
 	}
 
-	grp3 :=r.Group("/customer")
+	customer :=r.Group("/customer")
 	{
-		grp3.POST("",Controllers.CreateCustomer)
-		grp3.GET(":id",Controllers.GetCustomerByID)
+		customer.POST("",Controllers.CreateCustomer)
+		customer.GET(":id",Controllers.GetCustomerByID)
 	}
 	return r
 }
