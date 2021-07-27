@@ -98,7 +98,7 @@ func isCoolDownOver(customerId int) bool{
 	currTime := time.Now()
 	diffTime := currTime.Sub(order.CreatedAt).Seconds()
 
-	if diffTime <= 60{
+	if diffTime <= 30{
 		return false
 	}
 	return true
@@ -106,6 +106,7 @@ func isCoolDownOver(customerId int) bool{
 
 func isOrderPossible(ord Models.Order, c *gin.Context) bool{
 	id := ord.ProductId
+	mutex.Lock()
 	var prod Models.Product
 	err := Models.GetProductByID(&prod,strconv.Itoa(id))
 	if err !=nil{
@@ -113,10 +114,12 @@ func isOrderPossible(ord Models.Order, c *gin.Context) bool{
 	}
 	if prod.Quantity < ord.Quantity{
 		ord.Status = "Failed"
+		mutex.Unlock()
 		return false
 	}
 	prod.Quantity -= ord.Quantity
 	ord.Status = "Processed"
+	mutex.Unlock()
 	err = Models.UpdateProduct(&prod,strconv.Itoa(id))
 	if err !=nil{
 		c.AbortWithStatus(http.StatusNotFound)
@@ -135,7 +138,7 @@ func OrderProduct(c *gin.Context){
 	coolDown := isCoolDownOver(order.CustomerId)
 	if coolDown == false{
 		c.JSON(http.StatusOK,gin.H{
-			"message":"Please wait till Cooldown time of 1 minute",
+			"message":"Please wait till Cooldown time of 30 seconds",
 		})
 		return
 	}
@@ -158,8 +161,6 @@ func OrderProduct(c *gin.Context){
 			"quantity":order.Quantity,
 			"status":order.Status,
 		})
-		//t = c
-		//channel <- order.Id
 	}
 }
 
@@ -211,51 +212,3 @@ func GetCustomerByID(c *gin.Context) {
 		c.JSON(http.StatusOK, cust)
 	}
 }
-
-/*
-func Initiate(mainChannel chan int){
-	channel = mainChannel
-	InitiateOrder()
-}
-func InitiateOrder(){
-	go func(){
-		for{
-			select {
-			case orderId := <-channel :
-				ExecuteOrder(orderId)
-			}
-		}
-	}()
-}
-
-func ExecuteOrder(id int){
-	fmt.Println(id)
-	var order Models.Order
-	err := Models.GetOrderByID(&order,strconv.Itoa(id))
-	if err != nil{
-		fmt.Println("order not found")
-		t.AbortWithStatus(http.StatusNotFound)
-		return
-	}
-	fmt.Println("order:")
-	fmt.Println(order)
-	productId := order.ProductId
-	var prod Models.Product
-	err = Models.GetProductByID(&prod, strconv.Itoa(productId))
-	if err != nil {
-		t.AbortWithStatus(http.StatusNotFound)
-	} else {
-		mutex.Lock()
-		if order.Quantity > prod.Quantity {
-			t.AbortWithStatusJSON(200, gin.H{"status": "not accepted",
-				"message": "Insufficient Quantity"})
-		} else{
-			prod.Quantity = prod.Quantity-order.Quantity
-			Models.UpdateProduct(&prod)
-			order.Status="accepted"
-			t.JSON(http.StatusOK, order)
-		}
-		mutex.Unlock()
-	}
-}
-*/
